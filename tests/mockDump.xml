@@ -1,0 +1,76 @@
+<mediawiki xmlns="http://www.mediawiki.org/xml/export-0.8/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mediawiki.org/xml/export-0.8/ http://www.mediawiki.org/xml/export-0.8.xsd" version="0.8" xml:lang="en">
+    <siteinfo>
+        <sitename>Wikipedia</sitename>
+        <base>http://simple.wikipedia.org/wiki/Main_Page</base>
+        <generator>MediaWiki 1.23wmf11</generator>
+        <case>first-letter</case>
+        <namespaces>
+            <namespace key="-2" case="first-letter">Media</namespace>
+            <namespace key="-1" case="first-letter">Special</namespace>
+            <namespace key="0" case="first-letter" />
+            <namespace key="1" case="first-letter">Talk</namespace>
+            <namespace key="2" case="first-letter">User</namespace>
+            <namespace key="3" case="first-letter">User talk</namespace>
+            <namespace key="4" case="first-letter">Wikipedia</namespace>
+            <namespace key="5" case="first-letter">Wikipedia talk</namespace>
+            <namespace key="6" case="first-letter">File</namespace>
+            <namespace key="7" case="first-letter">File talk</namespace>
+            <namespace key="8" case="first-letter">MediaWiki</namespace>
+            <namespace key="9" case="first-letter">MediaWiki talk</namespace>
+            <namespace key="10" case="first-letter">Template</namespace>
+            <namespace key="11" case="first-letter">Template talk</namespace>
+            <namespace key="12" case="first-letter">Help</namespace>
+            <namespace key="13" case="first-letter">Help talk</namespace>
+            <namespace key="14" case="first-letter">Category</namespace>
+            <namespace key="15" case="first-letter">Category talk</namespace>
+            <namespace key="828" case="first-letter">Module</namespace>
+            <namespace key="829" case="first-letter">Module talk</namespace>
+        </namespaces>
+    </siteinfo>
+
+    <!-- START MOCK PAGES
+    Note: page sha1 has been removed
+     -->
+
+    <page>
+        <title>April</title>
+        <ns>0</ns>
+        <id>1</id>
+        <revision>
+            <id>111</id>
+            <parentid>11</parentid>
+            <timestamp>2013-12-08T14:00:22Z</timestamp>
+            <contributor>
+                <username>Beefball</username>
+                <id>1234</id>
+            </contributor>
+            <minor />
+            <comment>I Am A Comment</comment>
+            <text xml:space="preserve">I Am Text</text>
+            <model>wikitext</model>
+            <format>text/x-wiki</format>
+        </revision>
+    </page>
+
+    <page>
+        <title>April.pdf</title>
+        <ns>6</ns>
+        <id>2</id>
+        <revision>
+            <id>222</id>
+            <parentid>22</parentid>
+            <timestamp>2013-12-08T14:00:22Z</timestamp>
+            <contributor>
+                <username>Addshore</username>
+                <id>123</id>
+            </contributor>
+            <comment>I Am A Comment</comment>
+            <text xml:space="preserve">I Am Text still!</text>
+            <model>wikitext</model>
+            <format>text/x-wiki</format>
+        </revision>
+    </page>
+
+    <!-- END MOCK PAGES -->
+
+</mediawiki>

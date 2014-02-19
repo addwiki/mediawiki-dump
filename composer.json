@@ -1,0 +1,19 @@
+{
+	"name": "addwiki/mediawiki-dump",
+	"type": "library",
+	"description": "A Mediawiki dump lib",
+	"keywords": ["Mediawiki"],
+	"authors": [
+		{
+			"name": "Addshore"
+		}
+	],
+	"require": {
+		"addwiki/mediawiki-datamodel": "dev-master"
+	},
+	"autoload": {
+		"psr-4": {
+			"Mediawiki\\Dump\\": "src/"
+		}
+	}
+}
