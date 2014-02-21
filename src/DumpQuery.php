@@ -3,10 +3,9 @@
 namespace Mediawiki\Dump;
 
 use InvalidArgumentException;
-use JsonSerializable;
 use RuntimeException;
 
-class DumpQuery implements JsonSerializable {
+class DumpQuery {
 
 	//TODO define output of the query! Titles? Pageids? Page Object?
 	//TODO add querying for minor, timestamp, comment, contributor
@@ -142,7 +141,7 @@ class DumpQuery implements JsonSerializable {
 	 * @return string
 	 */
 	public function getHash() {
-		return sha1( json_encode( $this ) );
+		return sha1( json_encode( $this->jsonSerialize() ) );
 	}
 
 	/**
@@ -151,6 +150,7 @@ class DumpQuery implements JsonSerializable {
 	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
 	 * @return mixed data which can be serialized by <b>json_encode</b>,
 	 * which is a value of any type other than a resource.
+	 * @todo when we move to 5.4 add the interface...
 	 */
 	public function jsonSerialize() {
 		return array(

@@ -153,7 +153,7 @@ class DumpQueryTest extends PHPUnit_Framework_TestCase {
 	 * @dataProvider provideDumpQueryObjects
 	 */
 	public function testSerializeDeserializeRoundtrip( DumpQuery $object ) {
-		$jsoned = json_encode( $object );
+		$jsoned = json_encode( $object->jsonSerialize() );
 		$this->assertTrue( is_array( json_decode( $jsoned, true ) ) );
 
 		$dejsoned = DumpQuery::jsonDeserialize( $jsoned );
