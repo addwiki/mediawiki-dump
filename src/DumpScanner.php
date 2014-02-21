@@ -104,7 +104,7 @@ class DumpScanner {
 	private function matchPage( Page $page, DumpQuery $query ) {
 
 		//Check namespaces
-		if( !count( $query->getNamespaceFilters( ) ) === 0 && !in_array( $page->getTitle()->getNs(), $query->getNamespaceFilters() ) ) {
+		if( count( $query->getNamespaceFilters() ) !== 0 && !in_array( $page->getTitle()->getNs(), $query->getNamespaceFilters() ) ) {
 			return false;
 		}
 
