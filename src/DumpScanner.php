@@ -49,10 +49,6 @@ class DumpScanner {
 			}
 		}
 
-		if( !is_readable( $dumpLocation ) ) {
-			throw new RuntimeException( '$dumpLocation is not readable' );
-		}
-
 		if( $query instanceof DumpQuery ) {
 			$query = array( $query );
 		}
