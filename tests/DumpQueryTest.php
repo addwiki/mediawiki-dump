@@ -11,8 +11,8 @@ use PHPUnit_Framework_TestCase;
 class DumpQueryTest extends PHPUnit_Framework_TestCase {
 
 	public function testConstruction() {
-		new DumpQuery();
-		$this->assertTrue( true );
+		$obj = new DumpQuery();
+		$this->assertEquals( 0, $obj->getConditionCount() );
 	}
 
 	/**
@@ -24,6 +24,7 @@ class DumpQueryTest extends PHPUnit_Framework_TestCase {
 			$query->addNamespaceFilter( $ns );
 		}
 		$this->assertEquals( $filters, $query->getNamespaceFilters() );
+		$this->assertEquals( count( $filters ), $query->getConditionCount() );
 	}
 
 	public function provideNamespaceFilters() {
@@ -63,6 +64,7 @@ class DumpQueryTest extends PHPUnit_Framework_TestCase {
 		}
 		$this->assertEquals( $contains, $query->getTitleFilters( DumpQuery::TYPE_CONTAINS ) );
 		$this->assertEquals( $missing, $query->getTitleFilters( DumpQuery::TYPE_MISSING ) );
+		$this->assertEquals( count( $contains ) + count( $missing ), $query->getConditionCount() );
 	}
 
 	/**
@@ -78,6 +80,7 @@ class DumpQueryTest extends PHPUnit_Framework_TestCase {
 		}
 		$this->assertEquals( $contains, $query->getTextFilters( DumpQuery::TYPE_CONTAINS ) );
 		$this->assertEquals( $missing, $query->getTextFilters( DumpQuery::TYPE_MISSING ) );
+		$this->assertEquals( count( $contains ) + count( $missing ), $query->getConditionCount() );
 	}
 
 	public function provideRegexFilters() {
@@ -144,6 +147,56 @@ class DumpQueryTest extends PHPUnit_Framework_TestCase {
 			array( 1234 ),
 			array( array() ),
 		);
+	}
+
+	/**
+	 * @dataProvider provideDumpQueryObjects
+	 */
+	public function testSerializeDeserializeRoundtrip( DumpQuery $object ) {
+		$jsoned = json_encode( $object );
+		$this->assertTrue( is_array( json_decode( $jsoned, true ) ) );
+
+		$dejsoned = DumpQuery::jsonDeserialize( $jsoned );
+		$this->assertInstanceOf( '\Mediawiki\Dump\DumpQuery', $dejsoned );
+		$this->assertEquals( $object, $dejsoned );
+	}
+
+	public function provideDumpQueryObjects() {
+		$objs = array();
+
+		$objs[0] = new DumpQuery();
+
+		$objs[1] = new DumpQuery();
+		$objs[1]->addNamespaceFilter( 1 );
+
+		$objs[2] = new DumpQuery();
+		$objs[2]->addNamespaceFilter( 1 );
+		$objs[2]->addNamespaceFilter( 12 );
+
+		$objs[3] = new DumpQuery();
+		$objs[3]->addTextFilter( '/asdffaw/i', DumpQuery::TYPE_CONTAINS );
+		$objs[3]->addTextFilter( '/missing../i', DumpQuery::TYPE_MISSING );
+
+		$objs[4] = new DumpQuery();
+		$objs[4]->addTitleFilter( '/qqqqq/i', DumpQuery::TYPE_CONTAINS );
+		$objs[4]->addTitleFilter( '/wwwww.*./i', DumpQuery::TYPE_MISSING );
+
+		$objs[5] = new DumpQuery();
+		$objs[5]->addNamespaceFilter( 1 );
+		$objs[5]->addNamespaceFilter( 12 );
+		$objs[5]->addNamespaceFilter( 100 );
+		$objs[5]->addTextFilter( '/asdffaw/i', DumpQuery::TYPE_CONTAINS );
+		$objs[5]->addTextFilter( '/missing../i', DumpQuery::TYPE_MISSING );
+		$objs[5]->addTextFilter( '/missing22../i', DumpQuery::TYPE_MISSING );
+		$objs[5]->addTitleFilter( '/qqqqq/i', DumpQuery::TYPE_CONTAINS );
+		$objs[5]->addTitleFilter( '/wwwww.*./i', DumpQuery::TYPE_MISSING );
+		$objs[5]->addTitleFilter( '/wwwww22.*./i', DumpQuery::TYPE_MISSING );
+
+		$provided = array();
+		foreach( $objs as $obj ) {
+			$provided[] = array( $obj );
+		}
+		return $provided;
 	}
 
 } 

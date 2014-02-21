@@ -2,11 +2,13 @@
 
 namespace Mediawiki\Dump;
 
+use InvalidArgumentException;
 use Mediawiki\DataModel\EditFlags;
 use Mediawiki\DataModel\Page;
 use Mediawiki\DataModel\Revision;
 use Mediawiki\DataModel\Revisions;
 use Mediawiki\DataModel\Title;
+use RuntimeException;
 use SimpleXMLElement;
 use XMLReader;
 
@@ -17,7 +19,7 @@ class DumpScanner {
 	 */
 	protected $reader;
 	/**
-	 * @var DumpQuery
+	 * @var DumpQuery[]
 	 */
 	protected $query;
 	/**
@@ -27,27 +29,62 @@ class DumpScanner {
 
 	/**
 	 * @param string $dumpLocation
-	 * @param DumpQuery $query
+	 * @param DumpQuery|DumpQuery[] $query
+	 *
+	 * @throws RuntimeException
+	 * @throws InvalidArgumentException
 	 */
-	public function __construct( $dumpLocation, DumpQuery $query ) {
+	public function __construct( $dumpLocation, $query ) {
+		if( !$query instanceof DumpQuery && !is_array( $query ) ) {
+			throw new InvalidArgumentException( '$query must be a DumpQuery or array of DumpQuerys' );
+		}
+		if( !is_string( $dumpLocation ) ) {
+			throw new InvalidArgumentException( '$dumpLocation must be a string' );
+		}
+		if( is_array( $query ) ) {
+			foreach( $query as $queryInstance ) {
+				if( !$queryInstance instanceof DumpQuery ) {
+					throw new InvalidArgumentException( '$query must be a DumpQuery or array of DumpQuerys' );
+				}
+			}
+		}
+
+		if( !is_readable( $dumpLocation ) ) {
+			throw new RuntimeException( '$dumpLocation is not readable' );
+		}
+
+		if( $query instanceof DumpQuery ) {
+			$query = array( $query );
+		}
+
 		$this->reader = new XMLReader();
 		$this->dumpLocation = $dumpLocation;
 		$this->query = $query;
 	}
 
+	/**
+	 * @throws RuntimeException
+	 * @return array of arrays.
+	 *         array( 'dumpKey' => array( 'match1', 'match2' ) )
+	 */
 	public function scan() {
-		$this->reader->open( $this->dumpLocation );
+		$openSuccess = $this->reader->open( $this->dumpLocation );
+		if( !$openSuccess ) {
+			throw new RuntimeException( 'Failed to open XML: '. $this->dumpLocation );
+		}
 
 		$result = array();
 		while ( $this->reader->read() && $this->reader->name !== 'page' );
 		while ( $this->reader->name === 'page' ) {
 			$element = new SimpleXMLElement( $this->reader->readOuterXML() );
 			$page = $this->getPageFromElement( $element );
-			$match = $this->matchPage( $page );
 
-			if( $match ) {
-				//TODO allow the user to choose what to return
-				$result[] = $page->getId();
+			foreach( $this->query as $queryKey => $query ) {
+				$match = $this->matchPage( $page, $query );
+				if( $match ) {
+					//TODO allow the user to choose what to return
+					$result[$queryKey][] = $page->getId();
+				}
 			}
 
 			$this->reader->next('page');
@@ -60,35 +97,36 @@ class DumpScanner {
 
 	/**
 	 * @param Page $page
+	 * @param DumpQuery $query
 	 *
 	 * @return bool
 	 */
-	private function matchPage( Page $page ) {
+	private function matchPage( Page $page, DumpQuery $query ) {
 
 		//Check namespaces
-		if( !count( $this->query->getNamespaceFilters( ) ) === 0 && !in_array( $page->getTitle()->getNs(), $this->query->getNamespaceFilters() ) ) {
+		if( !count( $query->getNamespaceFilters( ) ) === 0 && !in_array( $page->getTitle()->getNs(), $query->getNamespaceFilters() ) ) {
 			return false;
 		}
 
 		//Check Title
-		foreach( $this->query->getTitleFilters( DumpQuery::TYPE_CONTAINS ) as $regex ) {
+		foreach( $query->getTitleFilters( DumpQuery::TYPE_CONTAINS ) as $regex ) {
 			if( !preg_match( $regex, $page->getTitle()->getTitle() ) ) {
 				return false;
 			}
 		}
-		foreach( $this->query->getTitleFilters( DumpQuery::TYPE_MISSING ) as $regex ) {
+		foreach( $query->getTitleFilters( DumpQuery::TYPE_MISSING ) as $regex ) {
 			if( preg_match( $regex, $page->getTitle()->getTitle() ) ) {
 				return false;
 			}
 		}
 
 		//Check Text
-		foreach( $this->query->getTextFilters( DumpQuery::TYPE_CONTAINS ) as $regex ) {
+		foreach( $query->getTextFilters( DumpQuery::TYPE_CONTAINS ) as $regex ) {
 			if( !preg_match( $regex, $page->getRevisions()->getLatest()->getContent() ) ) {
 				return false;
 			}
 		}
-		foreach( $this->query->getTextFilters( DumpQuery::TYPE_MISSING ) as $regex ) {
+		foreach( $query->getTextFilters( DumpQuery::TYPE_MISSING ) as $regex ) {
 			if( preg_match( $regex, $page->getRevisions()->getLatest()->getContent() ) ) {
 				return false;
 			}
@@ -115,9 +153,10 @@ class DumpScanner {
 						$node->revision->id->__toString(),
 						$node->revision->text->__toString(),
 						$node->revision->username->__toString(),
-						//todo minor / bot
 						new EditFlags(
-							$node->revision->comment->__toString()
+							$node->revision->comment->__toString(),
+							isset( $node->revision->minor ),
+							isset( $node->revision->bot )
 						),
 						$node->revision->timestamp->__toString()
 					)

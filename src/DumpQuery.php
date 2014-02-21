@@ -3,9 +3,10 @@
 namespace Mediawiki\Dump;
 
 use InvalidArgumentException;
+use JsonSerializable;
 use RuntimeException;
 
-class DumpQuery {
+class DumpQuery implements JsonSerializable {
 
 	//TODO define output of the query! Titles? Pageids? Page Object?
 	//TODO add querying for minor, timestamp, comment, contributor
@@ -124,4 +125,72 @@ class DumpQuery {
 		}
 	}
 
-} 
+	/**
+	 * Return the number of conditions within the query
+	 * @returns int
+	 */
+	public function getConditionCount() {
+		return
+			count( $this->ns ) +
+			count( $this->text[self::TYPE_CONTAINS] ) +
+			count( $this->text[self::TYPE_MISSING] ) +
+			count( $this->title[self::TYPE_CONTAINS] ) +
+			count( $this->title[self::TYPE_MISSING] );
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getHash() {
+		return sha1( json_encode( $this ) );
+	}
+
+	/**
+	 * (PHP 5 &gt;= 5.4.0)<br/>
+	 * Specify data which should be serialized to JSON
+	 * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+	 * @return mixed data which can be serialized by <b>json_encode</b>,
+	 * which is a value of any type other than a resource.
+	 */
+	public function jsonSerialize() {
+		return array(
+			'ns' => $this->ns,
+			'title' => $this->title,
+			'text' => $this->text,
+		);
+	}
+
+	/**
+	 * @param string|array $json
+	 *
+	 * @throws InvalidArgumentException
+	 * @return DumpQuery
+	 */
+	public static function jsonDeserialize( $json ) {
+		if( !is_array( $json ) && !is_string( $json ) ) {
+			throw new InvalidArgumentException( 'jsonDeserialize needs an array or string' );
+		}
+
+		if( is_string( $json ) ) {
+			$array = json_decode( $json, true );
+		} else {
+			$array = $json;
+		}
+
+		$obj = new self;
+		foreach( $array['ns'] as $ns ) {
+			$obj->addNamespaceFilter( $ns );
+		}
+		foreach( $array['title'] as $type => $titleFilters ) {
+			foreach( $titleFilters as $filter ) {
+				$obj->addTitleFilter( $filter, $type );
+			}
+		}
+		foreach( $array['text'] as $type => $textFilters ) {
+			foreach( $textFilters as $filter ) {
+				$obj->addTextFilter( $filter, $type );
+			}
+		}
+		return $obj;
+	}
+}
