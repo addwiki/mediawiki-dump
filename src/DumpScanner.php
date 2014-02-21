@@ -83,7 +83,7 @@ class DumpScanner {
 				$match = $this->matchPage( $page, $query );
 				if( $match ) {
 					//TODO allow the user to choose what to return
-					$result[$queryKey][] = $page->getId();
+					$result[$queryKey][] = $page->getTitle()->getTitle();
 				}
 			}
 
