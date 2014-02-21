@@ -70,6 +70,10 @@ class DumpScanner {
 		}
 
 		$result = array();
+		foreach( $this->query as $queryKey => $query ) {
+			$result[$queryKey]= array(); // Make sure keys are returned even if empty
+		}
+
 		while ( $this->reader->read() && $this->reader->name !== 'page' );
 		while ( $this->reader->name === 'page' ) {
 			$element = new SimpleXMLElement( $this->reader->readOuterXML() );
