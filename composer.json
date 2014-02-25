@@ -9,7 +9,7 @@
 		}
 	],
 	"require": {
-		"addwiki/mediawiki-datamodel": "dev-master"
+		"addwiki/mediawiki-datamodel": "0.1.*"
 	},
 	"autoload": {
 		"psr-4": {
